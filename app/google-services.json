@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "821878233441",
+    "firebase_url": "https://artclass-28f66.firebaseio.com",
+    "project_id": "artclass-28f66",
+    "storage_bucket": "artclass-28f66.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821878233441:android:79f220cb3808280493cd20",
+        "android_client_info": {
+          "package_name": "com.example.artclass"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "821878233441-6jj6p0adf09fgo7a2jhuqcuavf249674.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxwopndGLiJn_ST-SuR8Q5BMtSlxG2dHU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "821878233441-6jj6p0adf09fgo7a2jhuqcuavf249674.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

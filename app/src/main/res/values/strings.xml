@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Art Class</string>
+    <string name="log_in">Log In</string>
+    <string name="background">background</string>
+    <string name="new_account">new account</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="todo" />
+    <string name="username">Username</string>
+    <string name="create_account">Create Account</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="test">TEST</string>
+    <string name="log_out">Log Out</string>
+    <string name="upload">UPLOAD</string>
+    <string name="upload_image">Upload image</string>
+    <string name="choose_image">CHOOSE IMAGE</string>
+</resources>
