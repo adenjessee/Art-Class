@@ -1,124 +1,93 @@
 
 package com.example.artclass
-
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
+import android.text.Editable
 import android.util.Log
 import android.widget.Button
-import android.widget.ImageView
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth.getInstance
-import com.google.firebase.storage.FirebaseStorage
-import java.util.*
+import com.google.firebase.auth.FirebaseAuth
 
+class LoginActivity : AppCompatActivity() {
+    private val TAG = "MyActivity"
 
-class LoginActivity : AppCompatActivity(){
-
-    var selectedPhoto: Uri? = null
-
-    @SuppressLint("CutPasteId")
-    override fun onCreate(savedInstanceState: Bundle?){
+    // everything to create and do in this activity page
+    override fun onCreate(savedInstanceState: Bundle?) {
 
         // the bar at the top is not needed
         supportActionBar?.hide()
 
-        // lets make the activity screen the login page
+        // any state it was in before if needed, get it back
         super.onCreate(savedInstanceState)
+
+        // lets see the xml layout that was made
         setContentView(R.layout.activity_login)
 
-        // preventing anything bad from happening with login
-        verifyUserIsLoggedIn()
-
         // make the instances of the buttons from the xml
-        val log_out_button : Button = findViewById(R.id.log_out_button)
-        val choose_image_button : Button = findViewById(R.id.choose_image_button)
-        val upload_image_button : Button = findViewById(R.id.upload_image_button)
+        val sign_in_button : Button = findViewById(R.id.sign_in_button)
+        val create_account_button : Button = findViewById(R.id.create_account_button)
 
-        // this is what happens when the log out button is pressed
-        log_out_button.setOnClickListener {
+        // these variables store the data entered in at the login page
+        val email: EditText = findViewById(R.id.email_text_login)
+        val password: EditText = findViewById(R.id.password_text_login)
 
-            // sign out
-            getInstance().signOut()
-
+        // this is what happens when the create account button is pressed
+        create_account_button.setOnClickListener {
             //just go to the next activity screen to set up log in information
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, RegisterActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         }
 
-        // when the choose image button is clicked we want to choose an image
-        choose_image_button.setOnClickListener {
-            openGalleryForImage()
+        // this is what happens when the sign in button is pressed
+        sign_in_button.setOnClickListener {
+            // lets show a debug message when we click the button just in case
+            Log.d(TAG, "create account activity")
+
+            // check to see if we can log in then go to next activity
+            loginUser(email.text, password.text)
         }
 
-        // upload the image chosen for this button click
-        upload_image_button.setOnClickListener {
-            uploadImageToFirebaseStorage()
-        }
     }
 
-    // open the gallery
-    private fun openGalleryForImage() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        startActivityForResult(intent, 0)
-    }
+    // the user may log in when this is called
+    private fun loginUser(email: Editable, password: Editable){
 
-    // setting the image on the current device screen to the image path chosen
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(resultCode == Activity.RESULT_OK && requestCode == 0){
-
-            // specify the image from the xml we want to operate on
-            val image_selected : ImageView = findViewById(R.id.image_selected)
-
-            // the data of the photo we need to use later
-            selectedPhoto = data?.data
-
-            // make a bitmap image from the selected photo data
-            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedPhoto)
-
-            // make the bitmap drawable to the screen
-            val bitmapDrawable = BitmapDrawable(bitmap)
-
-            // draw the bitmap to the image we want on screen
-            image_selected.setBackgroundDrawable(bitmapDrawable)
-
-        }
-    }
-
-    // here we upload an image chosen in the device to firebase
-    private fun uploadImageToFirebaseStorage(){
-        // something bad might happen if we don't do this check
-        if(selectedPhoto == null){
-            return
+        // lets make sure the user actually enters in stuff first
+        if(email.isEmpty() || password.isEmpty()){
+            // if we got here the user messed up and did not enter something
+            Toast.makeText(this, "Please enter an email and password", Toast.LENGTH_SHORT).show()
+            return  // go back and try again
         }
 
-        // the filename will be same long random string when stored in firebase
-        val filename = UUID.randomUUID().toString()
+        // these show in the log what the text is that was entered
+        //Log.d(TAG, "Email: " + email)
+        //Log.d(TAG, "Password: $password")
 
-        // the reference is the place we want to put our file into firebase
-        val ref = FirebaseStorage.getInstance().getReference("/images/$filename")
+        // put in the email and password into the firebase authentication
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email.toString(), password.toString())
 
-        // using the reference object we can put a selected photo into that reference
-        ref.putFile(selectedPhoto!!).addOnSuccessListener {
-            Log.d("LoginActivity", "WE UPLOADED AN IMAGE!!!")
-        }
+            //if successful
+            .addOnCompleteListener{
+                // did we have success in making a new account?
+                if(!it.isSuccessful) {
+                    return@addOnCompleteListener
+                }
+
+                // user is always welcome once logged in
+                Toast.makeText(this, "Welcome!", Toast.LENGTH_SHORT).show()
+
+                // go to the next activity screen
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+
+                //show the user what went wrong
+            .addOnFailureListener{
+                Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
+            }
     }
-
-    // lets make sure the user is actually signed in to be looking at the login page
-    private fun verifyUserIsLoggedIn() {
-        val uid = getInstance().uid
-        if (uid == null) {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-        }
-    }
-
 }

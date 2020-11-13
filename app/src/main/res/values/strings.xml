@@ -14,4 +14,12 @@
     <string name="upload">UPLOAD</string>
     <string name="upload_image">Upload image</string>
     <string name="choose_image">CHOOSE IMAGE</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="rate_new_art">Rate New Art</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="options">Options</string>
+    <string name="my_uploads">My Uploads</string>
+    <string name="settings">Settings</string>
 </resources>
