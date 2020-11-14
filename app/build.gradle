@@ -71,4 +71,7 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
 
     implementation "androidx.viewpager2:viewpager2:1.0.0"
+
+    // downloading images
+    implementation 'com.firebaseui:firebase-ui-storage:6.4.0'
 }

@@ -77,30 +77,50 @@
         android:layout_height="1dp"
         android:background="@android:color/darker_gray"/>
 
-    <ImageView
-        android:id="@+id/image_published_artwork"
-        android:layout_width="371dp"
-        android:layout_height="65dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/my_published_artwork"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@android:color/darker_gray"/>
 
-    <ImageView
-        android:id="@+id/art1"
-        android:layout_width="375dp"
-        android:layout_height="230dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/image_default"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+<!--    <ImageView-->
+<!--        android:id="@+id/image_published_artwork"-->
+<!--        android:layout_width="371dp"-->
+<!--        android:layout_height="65dp"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:src="@drawable/my_published_artwork"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <TextView
+        android:id="@+id/ArtView"
+        android:gravity="center"
+        android:padding="8dp"
+        android:fontFamily="cursive"
+        android:textSize="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Published Artwork" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
 
     <TextView
         android:id="@+id/art1_text"

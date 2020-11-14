@@ -6,31 +6,26 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.artclass.LoginActivity
 import com.example.artclass.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.FirebaseStorage
-import java.util.*
+import com.example.artclass.SafeClickListener
 import com.example.artclass.databinding.FragmentHomeBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.FirebaseDatabaseKtxRegistrar
-import com.google.firebase.database.ktx.database
-import com.google.firebase.database.ktx.getValue
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import java.lang.StringBuilder
-import java.lang.ref.Reference
+import java.util.*
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,6 +37,9 @@ class HomeFragment : Fragment() {
 
     // photo URI to use from image gallery
     var selectedPhoto: Uri? = null
+
+    // total number of photos for a given uesr
+    var totalNumberOfPhotos: Long = 0
 
     // make a binding so we can access elements safely
     private lateinit var binding: FragmentHomeBinding
@@ -60,7 +58,7 @@ class HomeFragment : Fragment() {
         val dialog = AlertDialog.Builder(context)
             .setTitle("Log Out")
             .setMessage("Are you sure you want to log out?")
-            .setPositiveButton ("Yes"){ _, _ ->
+            .setPositiveButton("Yes"){ _, _ ->
                 Toast.makeText(context, "Logging out", Toast.LENGTH_SHORT)
 
                 // sign out
@@ -71,27 +69,36 @@ class HomeFragment : Fragment() {
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
             }
-            .setNegativeButton ("No"){ _, _ ->
+            .setNegativeButton("No"){ _, _ ->
                 Toast.makeText(context, "Logged in", Toast.LENGTH_SHORT)
             }
 
         // this is what happens when the log out button is pressed
-        binding.logOutButton.setOnClickListener {
+        binding.logOutButton.setSafeOnClickListener {
+            // showing the dialog gives the option to log out
             dialog.show()
         }
 
         // when the choose image button is clicked we want to choose an image
-        binding.chooseImageButton.setOnClickListener {
+        binding.chooseImageButton.setSafeOnClickListener {
             openGalleryForImage()
         }
 
         // upload the image chosen for this button click
-        binding.uploadImageButton.setOnClickListener {
+        binding.uploadImageButton.setSafeOnClickListener {
             uploadImageToFirebaseStorage()
         }
 
         // return the important binding info
         return binding.root
+    }
+
+    // prevent user from clicking too many times in a row
+    private fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
+        val safeClickListener = SafeClickListener {
+            onSafeClick(it)
+        }
+        setOnClickListener(safeClickListener)
     }
 
     // open the gallery
@@ -122,6 +129,23 @@ class HomeFragment : Fragment() {
             return
         }
 
+        // update number of photos user currently has
+        updateNumberOfPhotos()
+
+        //see if user is upgraded
+        var isUpgraded = isUpgraded()
+
+        // if user is not upgraded and there is 12 or more photos we cant do anything
+        if(totalNumberOfPhotos >= 12 && !isUpgraded){
+            val dialog = AlertDialog.Builder(context)
+                    .setTitle("Sorry")
+                    .setMessage("We can only allow up to 12 of your masterpieces." +
+                            "\n Please subscribe in settings to publish unlimited art.")
+            dialog.show()
+
+            return
+        }
+
         // the filename will be a long random string when stored in firebase
         val filename = UUID.randomUUID().toString()
 
@@ -147,37 +171,50 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // keep track of image references in the data base
     private fun saveUserImageToDatabase(ref: StorageReference){
         // url from the reference
         val url = ref.downloadUrl.toString()
 
-
-
-        // TODO: Get your masterpiece numbers to work with the loop
-        // Make is so when you add an image it will by #2 and the total can be known
-
-
         // get the user id for the current user logged in
         val uid = FirebaseAuth.getInstance().uid ?: ""
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/masterpieces/$1" )
+        val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/masterpieces/")
 
-        val getData = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                var builder = StringBuilder()
-                for(i in dataSnapshot.child(uid).child("masterpieces").children){
-                    var images = i.child("$i").getValue()
-                    var key = i.key
-                    builder.append("$key $images")
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Log.w("TAG", "loadPost:onCancelled", databaseError.toException())
-                // ...
-            }
+        userRef.push().setValue(url).addOnFailureListener{
+                // show that something went wrong
+                val dialog = AlertDialog.Builder(context)
+                        .setTitle("Oops!")
+                        .setMessage("There was a server error, please try again later.")
+                dialog.show()
         }
+    }
 
-        userRef.setValue(url)
+    // to know the amount of photos a user has stored
+    private fun updateNumberOfPhotos(){
+        // get the user id for the current user logged in
+        val uid = FirebaseAuth.getInstance().uid ?: ""
+
+        // get the firebase instance
+        val db = FirebaseDatabase.getInstance().reference
+
+        // find out how many images are in the users profile
+        db.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Get Post object and use the values to update the UI
+                totalNumberOfPhotos = dataSnapshot.child("/users/$uid/masterpieces/").childrenCount
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // show that something went wrong
+                val dialog = AlertDialog.Builder(context)
+                        .setTitle("Oops!")
+                        .setMessage("There was a server error, please try again later.")
+                dialog.show()
+            }
+        })
+    }
+
+    // TODO: make a subscription feature and decide if subscribed or not
+    private fun isUpgraded(): Boolean{
+        return false
     }
 }
